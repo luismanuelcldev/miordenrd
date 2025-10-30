@@ -1,0 +1,333 @@
+// Decidí centralizar el modelo de datos del sistema usando Prisma para mantener consistencia y DX.
+
+// Enums
+enum Rol {
+  CLIENTE
+  ADMINISTRADOR
+  EMPLEADO
+  REPARTIDOR
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  EN_PREPARACION
+  ENVIADO
+  ENTREGADO
+  CANCELADO
+}
+
+enum MetodoPago {
+  TARJETA
+  TRANSFERENCIA
+  CONTRA_ENTREGA
+  PAYPAL
+}
+
+enum EstadoStock {
+  ENTRADA
+  SALIDA
+  AJUSTE
+}
+
+generator client {
+  // Genero el cliente de Prisma para consultas tipadas en Node/Nest.
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  // Apunto a PostgreSQL y leo la cadena de conexión desde el entorno.
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+// Modelo de usuario: administro credenciales, rol y metadatos de actividad.
+model Usuario {
+  id            Int       @id @default(autoincrement())
+  nombre        String?
+  apellido      String?
+  email         String    @unique
+  contrasena    String?
+  // Guardo opcionalmente el sub de Cognito para federación de identidad.
+  cognitoSub    String?   @unique
+  telefono      String?
+  rol           Rol       @default(CLIENTE)
+  activo        Boolean   @default(true)
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  direcciones   Direccion[]
+  pedidos       Pedido[]
+  pedidosRepartidor Pedido[] @relation("PedidosRepartidor")
+  carrito       Carrito?
+  logs          LogAdmin[]
+  auditorias    AuditoriaAccion[]
+}
+
+// Modelo de dirección: vinculo geolocalización y zona de entrega.
+model Direccion {
+  id            Int       @id @default(autoincrement())
+  calle         String
+  ciudad        String
+  pais          String
+  codigoPostal  String?
+  referencias   String?
+  latitud       Float?
+  longitud      Float?
+  validada      Boolean   @default(false)
+  zonaId        Int?
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  usuarioId     Int
+  usuario       Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  pedidos       Pedido[]
+  zona          ZonaEntrega? @relation(fields: [zonaId], references: [id])
+}
+
+// Categoría: agrupo productos y puedo asignar una imagen destacada.
+model Categoria {
+  id            Int       @id @default(autoincrement())
+  nombre        String    @unique
+  descripcion   String?
+  imagenUrl     String?
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  productos     Producto[]
+  subcategorias Subcategoria[]
+}
+
+// Subcategoría: refina el agrupamiento dentro de una categoría.
+model Subcategoria {
+  id            Int       @id @default(autoincrement())
+  nombre        String
+  descripcion   String?
+  categoriaId   Int
+  categoria     Categoria @relation(fields: [categoriaId], references: [id])
+  productos     Producto[]
+}
+
+// Producto: describo precios, stock, oferta y relaciones con categoría/subcategoría.
+model Producto {
+  id            Int       @id @default(autoincrement())
+  nombre        String
+  descripcion   String?
+  precio        Float
+  stock         Int       @default(0)
+  imagenUrl     String?
+  enOferta      Boolean   @default(false)
+  precioOferta  Float?
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  categoriaId   Int?
+  categoria     Categoria? @relation(fields: [categoriaId], references: [id])
+  subcategoriaId Int?
+  subcategoria   Subcategoria? @relation(fields: [subcategoriaId], references: [id])
+
+  itemsPedido   ItemPedido[]
+  itemsCarrito  ItemCarrito[]
+  historialStock HistorialStock[]
+
+  ReporteVenta ReporteVenta[]
+}
+
+// Historial de stock: registro entradas, salidas y ajustes con su motivo.
+model HistorialStock {
+  id            Int       @id @default(autoincrement())
+  productoId    Int
+  producto      Producto  @relation(fields: [productoId], references: [id])
+  cantidad      Int
+  estado        EstadoStock
+  motivo        String?
+  fecha         DateTime  @default(now())
+}
+
+// Pedido: gestiono totales, estado, costos de envío y método de pago.
+model Pedido {
+  id            Int          @id @default(autoincrement())
+  creadoEn      DateTime     @default(now())
+  actualizadoEn DateTime     @updatedAt
+  estado        EstadoPedido @default(PENDIENTE)
+  total         Float
+  costoEnvio    Float        @default(0)
+  metodoPago    MetodoPago   @default(TARJETA)
+
+  usuarioId     Int
+  usuario       Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  direccionId   Int
+  direccion     Direccion    @relation(fields: [direccionId], references: [id])
+  repartidorId  Int?
+  repartidor    Usuario?     @relation("PedidosRepartidor", fields: [repartidorId], references: [id])
+
+  items         ItemPedido[]
+
+  notificado    Boolean     @default(false)
+  notificaciones Notificacion[]
+  transaccionesPago TransaccionPago[]
+}
+
+// Zona de entrega: defino polígonos y parámetros de cobertura para cálculo de tarifas.
+model ZonaEntrega {
+  id            Int       @id @default(autoincrement())
+  nombre        String    @unique
+  descripcion   String?
+  color         String?
+  activa        Boolean   @default(true)
+  poligono      Json
+  centroideLatitud  Float?
+  centroideLongitud Float?
+  radioCoberturaKm  Float?
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  direcciones   Direccion[]
+  tarifas       TarifaZona[]
+}
+
+// Tarifa por zona: escalo costos por distancia con posibles recargos.
+model TarifaZona {
+  id             Int       @id @default(autoincrement())
+  zonaId         Int
+  distanciaMin   Float     @default(0)
+  distanciaMax   Float?
+  costoBase      Float
+  costoPorKm     Float?
+  recargo        Float?    @default(0)
+  creadoEn       DateTime  @default(now())
+  actualizadoEn  DateTime  @updatedAt
+
+  zona           ZonaEntrega @relation(fields: [zonaId], references: [id], onDelete: Cascade)
+}
+// Notificación: registro envíos (email/push/sms) relacionados con pedidos u otros eventos.
+model Notificacion {
+  id                Int      @id @default(autoincrement())
+  email             String
+  mensaje           String
+  tipo              String   // EMAIL, PUSH, SMS
+  estado            String   // ENVIADA, FALLIDA, PENDIENTE
+  enviadoEn         DateTime @default(now())
+  pedidoId          Int?
+  pedido            Pedido?  @relation(fields: [pedidoId], references: [id])
+  datosAdicionales  Json?
+}
+
+// Transacción de pago: almaceno estados y referencias externas del proveedor de pagos.
+model TransaccionPago {
+  id                Int       @id @default(autoincrement())
+  pedidoId          Int
+  pedido            Pedido    @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  metodoPago        MetodoPago
+  monto             Float
+  estado            String    // PENDIENTE, COMPLETADO, FALLIDO, REEMBOLSADO
+  referenciaExterna String?
+  datosAdicionales  Json?
+  creadoEn          DateTime  @default(now())
+  actualizadoEn     DateTime  @updatedAt
+}
+
+// Reporte de ventas: guardo KPIs y filtros usados para generar el reporte.
+model ReporteVenta {
+  id                Int      @id @default(autoincrement())
+  generadoEn        DateTime @default(now())
+  totalVentas       Float
+  totalIngresos     Float
+  productoMasVendidoId Int?
+  productoMasVendido   Producto? @relation(fields: [productoMasVendidoId], references: [id])
+  filtroFechaInicio DateTime?  // Para reportes por rango de fechas
+  filtroFechaFin    DateTime?
+  filtroUsuarioId   Int?       // Para reportes por usuario
+  filtroCategoriaId Int?       // Para reportes por categoría
+}
+
+// Contacto: registro mensajes enviados desde formularios públicos.
+model Contacto {
+  id       Int      @id @default(autoincrement())
+  nombre   String
+  email    String
+  asunto   String?
+  mensaje  String
+  creadoEn DateTime @default(now())
+}
+
+// Log administrativo: audito acciones realizadas por administradores.
+model LogAdmin {
+  id        Int      @id @default(autoincrement())
+  usuarioId Int
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id])
+  accion    String
+  fecha     DateTime @default(now())
+}
+
+// Ítem de pedido: vinculo productos con su cantidad y precio en el pedido.
+model ItemPedido {
+  id            Int      @id @default(autoincrement())
+  cantidad      Int
+  precio        Float
+
+  pedidoId      Int
+  pedido        Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  productoId    Int
+  producto      Producto @relation(fields: [productoId], references: [id])
+}
+
+// Carrito: mantengo el estado temporal de compras por usuario.
+model Carrito {
+  id            Int       @id @default(autoincrement())
+  creadoEn      DateTime  @default(now())
+  actualizadoEn DateTime  @updatedAt
+
+  usuarioId     Int       @unique
+  usuario       Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  items         ItemCarrito[]
+}
+
+// Ítem de carrito: relación entre carrito y producto con la cantidad elegida.
+model ItemCarrito {
+  id            Int      @id @default(autoincrement())
+  cantidad      Int
+  carritoId     Int
+  carrito       Carrito  @relation(fields: [carritoId], references: [id], onDelete: Cascade)
+  productoId    Int
+  producto      Producto @relation(fields: [productoId], references: [id])
+}
+
+/// Opté por un modelo de auditoría para rastrear acciones relevantes en módulos clave.
+model AuditoriaAccion {
+  id          Int      @id @default(autoincrement())
+  usuarioId   Int
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id])
+  modulo      String   // Ejemplo: 'PEDIDOS', 'PRODUCTOS', 'USUARIOS'
+  accion      String   // Ejemplo: 'CREAR', 'EDITAR', 'ELIMINAR', 'LOGIN'
+  descripcion String?
+  fecha       DateTime @default(now())
+}
+
+// Configuración del sistema: centralizo parámetros de marca, contacto y reglas operativas.
+model ConfiguracionSistema {
+  id                     Int      @id @default(autoincrement())
+  nombreTienda           String
+  descripcion            String?
+  email                  String
+  telefono               String?
+  direccion              String?
+  notificacionesPedidos  Boolean  @default(true)
+  notificacionesStock    Boolean  @default(true)
+  notificacionesClientes Boolean  @default(false)
+  autenticacionDosFactor Boolean  @default(false)
+  sesionExpiracion       Int      @default(24)
+  envioGratis            Float    @default(0)
+  costoEnvio             Float    @default(0)
+  tiempoEntrega          String?
+  iva                    Int      @default(0)
+  moneda                 String   @default("RD$")
+  colorPrimario          String   @default("#2b62e1")
+  colorSecundario        String   @default("#1f2937")
+  logoUrl                String?
+  creadoEn               DateTime @default(now())
+  actualizadoEn          DateTime @updatedAt
+}
