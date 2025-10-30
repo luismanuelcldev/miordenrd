@@ -2,18 +2,15 @@
 
 Backend desarrollado con NestJS y Prisma sobre PostgreSQL. Expone APIs para autenticación, gestión de productos, pedidos, usuarios y operaciones auxiliares (carrito, zonas de entrega, reportes, configuración). Está preparado para desarrollo local y despliegue en Docker, con pruebas unitarias y e2e listas.
 
-## Requirements
+## Requisitos
 Para ejecutar y mantener el servicio en condiciones productivas, necesito:
 
-● Node.js 20.x y npm 10+ (para desarrollo y build).
+- Node.js 20.x y npm 10+ (para desarrollo y build).
 
-● PostgreSQL 14+ accesible vía `DATABASE_URL`.
+- PostgreSQL 14+ accesible vía `DATABASE_URL`.
 
-● Variables JWT definidas en `.env` (ver sección Variables de entorno).
+- Variables JWT definidas en `.env` (ver sección Variables de entorno).
 
-● Opcional: Docker Engine + BuildKit si quieres contenedores reproducibles.
-
-Tu tarea al operar este backend es mantener la base de datos migrada, los secretos seguros y las imágenes actualizadas. Incluyo más abajo comandos y notas de operación.
 
 ## Tecnologías seleccionadas
 - NestJS como framework HTTP modular orientado a arquitectura limpia.
