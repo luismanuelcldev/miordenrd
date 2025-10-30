@@ -1,342 +1,162 @@
-# Frontend - Sistema de Pedidos Online
+# Sistema de pedidos — Frontend
 
-Frontend moderno desarrollado con React 19, TypeScript, Vite y Tailwind CSS para un sistema de pedidos online completo.
+Frontend desarrollado con React y TypeScript sobre Vite. Implementa catálogo, carrito, checkout con pagos PayPal, cuenta de usuario, panel administrativo (productos, pedidos, usuarios, reportes, zonas/logística) y área de repartidor. Preparado para desarrollo local y despliegue en Docker, con pruebas unitarias via Vitest/MSW.
 
-## 🚀 Tecnologías
+## Requisitos
+Para ejecutar y mantener el frontend en condiciones productivas, necesito:
 
-- **React 19** - Biblioteca UI con las últimas características
-- **TypeScript** - Tipado estático para mayor seguridad
-- **Vite** - Build tool ultra-rápido
-- **Tailwind CSS** - Framework CSS utility-first
-- **React Router DOM** - Enrutamiento del lado del cliente
-- **Axios** - Cliente HTTP para comunicación con API
-- **Vitest** - Framework de testing moderno
-- **MSW** - Mock Service Worker para pruebas
-- **Radix UI** - Componentes accesibles y sin estilos
-- **PayPal SDK** - Integración de pagos
+- Node.js 20.x y npm 10+ (para desarrollo y build).
 
-## 📋 Requisitos Previos
+- Backend accesible vía `VITE_API_URL` (p. ej. `http://localhost:3000/api/v1`).
 
-- Node.js >= 18.x
-- npm >= 9.x
-- Backend del sistema corriendo en `http://localhost:3000/api/v1`
+- Variables `VITE_*` definidas en `.env` (ver Variables de entorno).
 
-## 🔧 Instalación
+- Opcional: Docker Engine + BuildKit para imágenes reproducibles.
 
-1. **Clonar el repositorio** (si aún no lo has hecho):
-```bash
-git clone <repository-url>
-cd sistemapedidos/frontend
-```
+## Tecnologías seleccionadas
+- React 18 + TypeScript para vistas tipadas y predecibles.
+- Vite 7 para desarrollo rápido y builds eficientes.
+- Tailwind CSS 4 + tailwind-merge para estilos utilitarios consistentes.
+- Radix UI + shadcn-style (Slot, Tabs, Dialog, Select, etc.) para componentes accesibles.
+- React Router v7 para enrutamiento SPA.
+- Axios para cliente HTTP con interceptores.
+- PayPal SDK (@paypal/react-paypal-js) para pagos.
+- MapLibre GL + Mapbox Draw (compat) para zonas/logística sin token propietario.
+- Recharts para visualizaciones en reportes.
+- html2canvas + jsPDF para exportes a PDF.
+- Vitest + Testing Library + MSW para pruebas unitarias y de componentes.
 
-2. **Instalar dependencias**:
-```bash
-npm install
-```
+## Justificación general
+- Vite mejora tiempos de arranque/HMR y simplifica el build.
+- Tailwind reduce CSS global y promueve consistencia visual.
+- Radix UI asegura accesibilidad y patrones robustos.
+- MapLibre evita dependencia en tokens de terceros (open source), manteniendo compat con Draw.
+- Vitest + MSW brindan tests rápidos y aislados del backend real.
 
-3. **Configurar variables de entorno**:
-Crea o edita el archivo `.env` en la raíz del proyecto:
-
-```env
-VITE_API_URL=http://localhost:3000/api/v1
-VITE_PAYPAL_CLIENT_ID=YOUR_PAYPAL_CLIENT_ID_HERE
-```
-
-**Variables disponibles:**
-- `VITE_API_URL`: URL del backend (por defecto: http://localhost:3000/api/v1)
-- `VITE_PAYPAL_CLIENT_ID`: ID del cliente de PayPal para pagos
-
-## 🏃 Ejecución
-
-### Desarrollo
-
-Inicia el servidor de desarrollo:
-```bash
-npm run dev
-```
-
-El frontend estará disponible en `http://localhost:5173`
-
-### Producción
-
-Compilar para producción:
-```bash
-npm run build
-```
-
-Vista previa de la compilación:
-```bash
-npm run preview
-```
-
-### Con Backend (Docker Compose)
-
-Desde la raíz del proyecto:
-```bash
-cd ..
-docker-compose up
-```
-
-Esto iniciará tanto el frontend como el backend automáticamente.
-
-## 🧪 Testing
-
-### Ejecutar todas las pruebas
-```bash
-npm test
-```
-
-### Ejecutar con coverage
-```bash
-npm run test:coverage
-```
-
-### Modo watch
-```bash
-npm run test:watch
-```
-
-## 📁 Estructura del Proyecto
-
+## Estructura del proyecto
 ```
 frontend/
-├── src/
-│   ├── components/       # Componentes reutilizables
-│   │   ├── layout/      # Header, Footer
-│   │   └── ui/          # Componentes UI (Button, Card, etc.)
-│   ├── pages/           # Páginas de la aplicación
-│   │   ├── admin/       # Panel de administración
-│   │   ├── cuenta/      # Gestión de cuenta
-│   │   ├── productos/   # Catálogo de productos
-│   │   ├── carrito/     # Carrito de compras
-│   │   └── checkout/    # Proceso de pago
-│   ├── services/        # Servicios de API
-│   │   ├── api.ts       # Cliente Axios configurado
-│   │   ├── authService.ts
-│   │   ├── productService.ts
-│   │   ├── cartService.ts
-│   │   ├── orderService.ts
-│   │   ├── userService.ts
-│   │   └── addressService.ts
-│   ├── lib/             # Contextos y utilidades
-│   │   ├── auth.tsx     # AuthProvider
-│   │   ├── cart.tsx     # CartProvider
-│   │   └── utils.ts     # Utilidades generales
-│   ├── types/           # Definiciones TypeScript
-│   ├── mocks/           # Mocks para testing (MSW)
-│   └── hooks/           # Custom hooks
-├── public/              # Archivos estáticos
-├── .env                 # Variables de entorno
-├── vite.config.ts       # Configuración de Vite
-├── vitest.config.ts     # Configuración de Vitest
-└── tailwind.config.js   # Configuración de Tailwind
+├─ Dockerfile                      # Build multi-stage Nginx
+├─ public/                         # Estáticos (imágenes)
+├─ src/
+│  ├─ components/
+│  │  ├─ layout/                  # Layouts, navegación, pie
+│  │  └─ ui/                      # Botones, inputs, tarjetas, etc.
+│  ├─ pages/                      # Rutas/páginas (admin, cuenta, productos, checkout, etc.)
+│  ├─ lib/                        # Providers (auth, cart) y utilidades
+│  ├─ services/                   # Llamadas HTTP (auth, productos, pedidos, etc.)
+│  ├─ hooks/                      # Hooks personalizados
+│  ├─ mocks/                      # MSW para pruebas
+│  ├─ types/                      # Tipos TS compartidos
+│  └─ assets/                     # Recursos locales
+├─ vite.config.ts                 # Configuración Vite/React
+├─ vitest.config.ts               # Configuración Vitest
+├─ tailwind.config.js             # Tailwind CSS
+├─ tsconfig.*.json                # TypeScript
+└─ .env.example                   # Variables de entorno de referencia
 ```
 
-## 🔐 Autenticación
+## Arquitectura y capas
+- Páginas (routes) renderizan vistas y orquestan datos.
+- Componentes (layout/ui) reutilizables y accesibles.
+- Servicios HTTP centralizan API calls y manejo de errores.
+- Providers (`lib/auth`, `lib/cart`) exponen estado y acciones.
+- Hooks encapsulan lógica de UI/datos.
 
-El sistema utiliza JWT (JSON Web Tokens) para autenticación:
+Relación general: Pages ⇄ Providers ⇄ Services ⇄ Backend.
 
-- **Access Token**: Almacenado en localStorage, expira en 1 hora
-- **Refresh Token**: Se usa para renovar el access token automáticamente
-- **Interceptores Axios**: Manejo automático de tokens y renovación
+## Componentes y responsabilidades
+- Autenticación: login, protección de rutas, perfil.
+- Catálogo de productos: filtros, paginación, detalle.
+- Carrito: agregar/editar/eliminar, subtotal y totales.
+- Checkout: direcciones, cálculo de envío por zonas, métodos de pago (PayPal).
+- Cuenta: pedidos, direcciones, favoritos, perfil.
+- Panel Admin: productos, inventario, categorías, pedidos, usuarios, reportes, configuración.
+- Logística/Zonas: edición de polígonos y tarifas con MapLibre + Draw.
+- Reportes: KPIs, gráficos y exporte a PDF.
 
-### Flujo de autenticación:
+## Variables de entorno
+Archivo de referencia: `.env.example`.
 
-1. Usuario inicia sesión → Recibe access + refresh tokens
-2. Cada petición incluye el access token en headers
-3. Si el token expira (401) → Se renueva automáticamente con refresh token
-4. Si el refresh token expira → Usuario debe iniciar sesión nuevamente
+- `VITE_API_URL`: URL base del backend (por ejemplo `http://localhost:3000/api/v1`).
+- `VITE_PAYPAL_CLIENT_ID`: ID de cliente PayPal (si usas pagos PayPal en el frontend).
 
-## 🛒 Gestión del Carrito
+Nota: las variables deben comenzar con `VITE_` para quedar disponibles en tiempo de build. Nunca expongas secretos de backend aquí.
 
-El carrito se sincroniza con el backend:
-
-- **Autenticado**: Carrito persistente en base de datos
-- **No autenticado**: Redirige a login al intentar agregar productos
-- **Actualización en tiempo real**: Cambios se reflejan inmediatamente
-
-## 📦 Servicios Implementados
-
-### AuthService
-- `login()` - Iniciar sesión
-- `register()` - Registrar usuario
-- `logout()` - Cerrar sesión
-- `getProfile()` - Obtener perfil
-- `changePassword()` - Cambiar contraseña
-
-### ProductService
-- `listarProductos()` - Listar con filtros y paginación
-- `obtenerProducto()` - Detalle de producto
-- `obtenerCategoriasDisponibles()` - Categorías
-
-### CartService
-- `obtenerCarrito()` - Obtener carrito
-- `agregarProducto()` - Agregar al carrito
-- `editarProducto()` - Actualizar cantidad
-- `eliminarProducto()` - Eliminar del carrito
-
-### OrderService
-- `listarMisPedidos()` - Historial de pedidos
-- `obtenerPedido()` - Detalle de pedido
-
-### CheckoutService
-- `procesarCompra()` - Procesar pedido
-
-### UserService
-- `obtenerPerfil()` - Perfil del usuario
-- `actualizarPerfil()` - Actualizar datos
-- `listarUsuarios()` - Listar usuarios (admin)
-
-### AddressService
-- `listarDirecciones()` - Direcciones de envío
-- `crearDireccion()` - Nueva dirección
-- `actualizarDireccion()` - Editar dirección
-- `eliminarDireccion()` - Eliminar dirección
-
-## 🎨 Componentes UI Reutilizables
-
-### Estados de Carga
-```tsx
-import { LoadingSpinner, PageLoading, InlineLoading } from '@/components/ui/loading-spinner'
-
-<LoadingSpinner size="lg" text="Cargando..." />
-<PageLoading text="Cargando productos..." />
-<InlineLoading text="Procesando..." />
-```
-
-### Mensajes de Error
-```tsx
-import { ErrorMessage, PageError, InlineError } from '@/components/ui/error-message'
-
-<ErrorMessage 
-  title="Error" 
-  message="No se pudo cargar" 
-  onRetry={refetch} 
-/>
-<PageError message="Error al cargar datos" onRetry={reload} />
-<InlineError message="Campo requerido" />
-```
-
-## 🔄 Providers y Contextos
-
-### AuthProvider
-```tsx
-import { useAuth } from '@/lib/auth'
-
-const { usuario, estaAutenticado, iniciarSesion, cerrarSesion } = useAuth()
-```
-
-### CartProvider
-```tsx
-import { useCart } from '@/lib/cart'
-
-const { carrito, agregarProducto, actualizarCantidad, crearPedido } = useCart()
-```
-
-## 🐛 Debugging
-
-### Revisar tokens almacenados:
-```javascript
-// En consola del navegador
-localStorage.getItem('access_token')
-localStorage.getItem('refresh_token')
-```
-
-### Revisar estado de MSW (testing):
-Los mocks se configuran automáticamente en modo test. Ver `src/mocks/handlers.ts`
-
-## 📝 Scripts Disponibles
-
-```json
-{
-  "dev": "vite",                    // Desarrollo
-  "build": "tsc -b && vite build",  // Compilar
-  "lint": "eslint .",               // Linter
-  "preview": "vite preview",        // Preview producción
-  "test": "vitest",                 // Tests
-  "test:coverage": "vitest --coverage" // Coverage
-}
-```
-
-## 🔗 Integración con Backend
-
-El frontend se comunica con el backend NestJS a través de la API REST:
-
-**URL Base**: `http://localhost:3000` (configurable en `.env`)
-
-**Endpoints principales**:
-- `/auth/*` - Autenticación
-- `/productos` - Productos
-- `/carrito/*` - Carrito
-- `/checkout` - Proceso de compra
-- `/pedidos/*` - Pedidos
-- `/usuarios/*` - Usuarios
-- `/direcciones/*` - Direcciones
-
-## 🚢 Despliegue
-
-### Desarrollo Local
+## Desarrollo local
 ```bash
+# 1) Instalar dependencias
+npm ci
+
+# 2) Configurar variables (crear .env desde .env.example)
+cp .env.example .env
+
+# 3) Levantar en modo desarrollo
 npm run dev
 ```
+Frontend estará en `http://localhost:5173`.
 
-### Docker
+## Docker
+- `Dockerfile` multi-stage: compila en Node (builder) y sirve con Nginx.
+- Se integra con `docker-compose.yml` desde la raíz del monorepo.
+
+Build y run (opcional):
 ```bash
-docker build -t frontend-pedidos .
-docker run -p 5173:80 frontend-pedidos
+docker build -t sistemapedidos-frontend -f Dockerfile .
+docker run -e VITE_API_URL=/api/v1 -e VITE_PAYPAL_CLIENT_ID=sb -p 5173:80 sistemapedidos-frontend
 ```
 
-### Con Docker Compose (Recomendado)
+Con Docker Compose (recomendado desde la raíz):
 ```bash
 cd ..
-docker-compose up
+docker-compose up -d
 ```
 
-Esto levantará:
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:3000`
-- Base de datos PostgreSQL
+## Scripts
+```bash
+# Desarrollo
+npm run dev
 
-## 🤝 Contribuir
+# Build de producción
+npm run build
 
-1. Fork el proyecto
-2. Crea tu rama de feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
+# Preview del build
+npm run preview
 
-## 📄 Licencia
-
-Este proyecto es privado y propietario.
-
-## 👥 Autores
-
-- **Equipo de Desarrollo** - Sistema de Pedidos Online
-
----
-
-**Nota**: Asegúrate de tener el backend corriendo antes de iniciar el frontend en desarrollo.
-
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Linter
+npm run lint
 ```
+
+## Pruebas
+```bash
+# Unitarias/componentes
+npm test
+
+# Modo watch
+npm run test:watch
+
+# Cobertura
+npm run test:coverage
+```
+Stack de pruebas: Vitest + @testing-library/react + MSW (mocks de red). Playwright está disponible si deseas pruebas E2E (opcional).
+
+## Configuración de Vite y TypeScript
+- `vite.config.ts`: plugin React, alias y optimizaciones de build.
+- `tsconfig.*.json`: opciones estrictas de TS para mejor DX.
+- `tailwind.config.js` y `globals.css`: estilos y utilidades.
+
+## Seguridad
+- Mantener `.env` fuera del repositorio (está ignorado por `.gitignore`).
+- Sólo exponer variables `VITE_*` necesarias; nunca claves de backend o secretos JWT.
+- PayPal: usar `VITE_PAYPAL_CLIENT_ID` en build; no hardcodear IDs reales en el código.
+- Si hay certificados/llaves locales, no comprometerlos; están ignorados (nginx/ssl, *.key, *.crt, *.pem, *.pfx).
+
+## Operación y mantenimiento
+- Actualizar dependencias con cuidado y correr `npm run build` antes de publicar.
+- Mantener consistencia de diseño con Tailwind y componentes UI compartidos.
+- Verificar rutas protegidas tras cambios de auth.
+
+## Notas finales
+- Branding y assets están en `public/` y `src/assets/`.
+- La subida de archivos y lógica de imágenes depende del backend (carpetas `uploads/`).
+- Para integración de mapas/logística, no se requieren tokens (MapLibre), pero asegúrate de revisar compatibilidad de Draw.
