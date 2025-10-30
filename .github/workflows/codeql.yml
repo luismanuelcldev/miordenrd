@@ -1,0 +1,46 @@
+name: CodeQL
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  schedule:
+    - cron: '0 3 * * 1'  # Semanal, lunes 03:00 UTC
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'javascript' ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Build (frontend/backend)
+        run: |
+          if [ -f backend/package.json ]; then
+            cd backend && npm ci --ignore-scripts && npm run build || true
+            cd -
+          fi
+          if [ -f frontend/package.json ]; then
+            cd frontend && npm ci --ignore-scripts && npm run build || true
+            cd -
+          fi
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
