@@ -1,14 +1,12 @@
-# Reemplaza api.tudominio.com por tu dominio apuntando al EC2 (registro A)
-api.tudominio.com {
+api.monitoringsystemtest.live {
   encode zstd gzip
 
   @api path /api/*
   handle @api {
-    # Quita el prefijo /api al reenviar al backend (Nest expone /api/v1)
     uri strip_prefix /api
     reverse_proxy backend-staging:3000
   }
 
-  # Health local (opcional)
+  # Health local
   respond /health "healthy" 200
 }

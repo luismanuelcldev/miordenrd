@@ -83,7 +83,9 @@ async function bootstrap() {
   // Aquí he habilitado CORS validando cada petición contra el conjunto de orígenes aceptados.
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || originsPermitidos.has(origin)) {
+      // Permitimos orígenes explícitos y dominios *.vercel.app para despliegues del frontend
+      const isVercel = typeof origin === 'string' && /\.vercel\.app$/.test(origin);
+      if (!origin || originsPermitidos.has(origin) || isVercel) {
         return callback(null, origin ?? true);
       }
       callback(new Error(`Origen no permitido por CORS: ${origin}`), false);
