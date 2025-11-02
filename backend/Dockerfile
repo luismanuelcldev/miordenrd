@@ -45,7 +45,6 @@ RUN npm ci --only=production || npm ci --only=production || npm install --only=p
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/generated ./generated
 
 # Creo un usuario no-root para ejecutar la app con menos privilegios.
 RUN addgroup -g 1001 -S nodejs
