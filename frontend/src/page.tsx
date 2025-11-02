@@ -83,7 +83,7 @@ export default function HomePage() {
             </div>
             <div className="relative">
               <div className="aspect-square rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                <img src="public/images/Image-Login-Register.PNG" alt="Producto destacado" className="w-3/4 h-3/4 object-contain" />
+                <img src="/images/Image-Login-Register.PNG" alt="Producto destacado" className="w-3/4 h-3/4 object-contain" />
               </div>
             </div>
           </div>
