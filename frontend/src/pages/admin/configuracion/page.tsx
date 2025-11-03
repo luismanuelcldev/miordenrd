@@ -10,14 +10,21 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Save, Store, Mail, Bell, Shield, Palette, Loader2 } from "lucide-react"
+import { Save, Store, Mail, Bell, Shield, Palette, Loader2, KeyRound } from "lucide-react"
 import { configService, type ConfiguracionSistema } from "@/services/configService"
 import { useToast } from "@/components/ui/toastContext"
+import { authService } from "@/services/authService"
 
 export default function ConfiguracionAdmin() {
   const [configuracion, setConfiguracion] = useState<ConfiguracionSistema | null>(null)
   const [cargando, setCargando] = useState(true)
   const [guardando, setGuardando] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    contrasenaActual: "",
+    nuevaContrasena: "",
+    confirmarContrasena: "",
+  })
+  const [cambiandoPassword, setCambiandoPassword] = useState(false)
   const { showToast } = useToast()
 
   // Al montar, traigo la configuración actual del sistema y manejo estados
@@ -56,6 +63,34 @@ export default function ConfiguracionAdmin() {
       showToast("No fue posible guardar la configuración", "error")
     } finally {
       setGuardando(false)
+    }
+  }
+
+  // Permito al administrador cambiar su contraseña directamente desde esta vista
+  const handlePasswordChange = async () => {
+    if (passwordForm.nuevaContrasena !== passwordForm.confirmarContrasena) {
+      showToast("Las contraseñas nuevas no coinciden", "error")
+      return
+    }
+
+    if (!passwordForm.contrasenaActual || !passwordForm.nuevaContrasena) {
+      showToast("Completa los campos de contraseña", "error")
+      return
+    }
+
+    try {
+      setCambiandoPassword(true)
+      await authService.changePassword({
+        contrasenaActual: passwordForm.contrasenaActual,
+        nuevaContrasena: passwordForm.nuevaContrasena,
+      })
+      showToast("Contraseña actualizada correctamente", "success")
+      setPasswordForm({ contrasenaActual: "", nuevaContrasena: "", confirmarContrasena: "" })
+    } catch (error) {
+      console.error(error)
+      showToast("No fue posible cambiar la contraseña", "error")
+    } finally {
+      setCambiandoPassword(false)
     }
   }
 
@@ -282,6 +317,66 @@ export default function ConfiguracionAdmin() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Cambio de contraseña del administrador */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <KeyRound className="h-5 w-5" />
+            Cambiar contraseña de administrador
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="contrasenaActual">Contraseña actual</Label>
+              <Input
+                id="contrasenaActual"
+                type="password"
+                value={passwordForm.contrasenaActual}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    contrasenaActual: e.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="nuevaContrasena">Nueva contraseña</Label>
+              <Input
+                id="nuevaContrasena"
+                type="password"
+                value={passwordForm.nuevaContrasena}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    nuevaContrasena: e.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirmarContrasena">Confirmar contraseña</Label>
+              <Input
+                id="confirmarContrasena"
+                type="password"
+                value={passwordForm.confirmarContrasena}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    confirmarContrasena: e.target.value,
+                  }))
+                }
+              />
+            </div>
+          </div>
+          <Button onClick={handlePasswordChange} disabled={cambiandoPassword} className="h-11 w-full md:w-auto">
+            {cambiandoPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            {cambiandoPassword ? "Actualizando..." : "Actualizar contraseña"}
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Configuración de apariencia */}
       <Card>
