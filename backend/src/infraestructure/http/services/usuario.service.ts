@@ -163,6 +163,11 @@ export class UsuarioService {
 
   // Aquí he eliminado un usuario del repositorio y registré la acción.
   async eliminar(usuarioId: number, usuarioActual: { id: number }) {
+    // Impido que un administrador elimine su propia cuenta durante la sesión actual
+    if (usuarioId === usuarioActual.id) {
+      throw new ConflictException('No puedes eliminar tu propia cuenta mientras estás autenticado');
+    }
+
     const usuario = await this.repositorioUsuario.encontrarPorId(usuarioId);
     if (!usuario) {
       throw new NotFoundException('Usuario no encontrado');
