@@ -1,199 +1,244 @@
-# Sistema de Pedidos Online: MiOrdenRD
+# MiOrdenRD – Sistema de Pedidos Online
 
-Repositorio que contiene el backend (NestJS + Prisma + PostgreSQL) y el frontend (React + Vite + Tailwind) para un e‑commerce completo: catálogo, carrito, checkout con PayPal, cuenta de usuario, panel administrativo, logística por zonas y módulo de repartidor. Preparado para desarrollo local y despliegue con Docker, e integra CI, análisis de dependencias y políticas de seguridad.
+[![CI](https://github.com/luismanuelcldev/miordenrd/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/luismanuelcldev/miordenrd/actions/workflows/ci.yml)
 
-## Características
+## Descripción general
 
-- Autenticación JWT con roles (Cliente, Administrador, Empleado, Repartidor)
-- Catálogo de productos con filtros, inventario y categorías
-- Carrito persistente y proceso de checkout
-- Pagos con PayPal (frontend) y notificaciones por email (backend)
-- Gestión de pedidos, estados y asignación de repartidor
-- Logística por zonas con MapLibre + Draw (sin necesidad de token propietario)
-- Panel de administración (productos, usuarios, reportes, configuración)
-- Herramientas administrativas: cambio de contraseña, bloqueo de auto-eliminación y auditoría
-- Reportes con gráficos y exporte a PDF
-- Docker Compose con healthchecks y Nginx opcional
-- Pruebas unitarias (backend: Jest, frontend: Vitest/MSW)
+Construí **MiOrdenRD** para ofrecer un e-commerce completo y operable en producción. Desde la captura del pedido hasta la logística de entrega, el sistema cubre todas las aristas que necesitaba: catálogo administrable, Pagos con PayPal, control de inventario, zonas de reparto editables y un panel para el equipo interno. Mantengo el proyecto en dos capas principales (backend NestJS y frontend React) dentro de un mismo monorepo, con despliegues automatizados en Railway y Vercel.
 
-## Estructura del monorepo
+## Tabla de contenidos
+- [Descripción general](#descripción-general)
+- [Características principales](#características-principales)
+- [Arquitectura](#arquitectura)
+- [Tecnologías y herramientas](#tecnologías-y-herramientas)
+- [Requisitos previos](#requisitos-previos)
+- [Instalación](#instalación)
+- [Configuración del entorno](#configuración-del-entorno)
+- [Ejecución](#ejecución)
+- [Estructura del código](#estructura-del-código)
+- [API principal](#api-principal)
+- [Pruebas](#pruebas)
+- [Despliegue](#despliegue)
+- [Contribuciones](#contribuciones)
+- [Licencia](#licencia)
+- [Autor y contacto](#autor-y-contacto)
+
+## Características principales
+- Autenticación por JWT con roles (cliente, administrador, empleado y repartidor) y gestión de sesiones cortas (`15m`) más refresh tokens.
+- Catálogo con filtros avanzados, categorías, inventario dinámico y control de precios/promociones.
+- Carrito persistente, checkout guiado y pagos con **PayPal** integrados desde el frontend.
+- Gestión de pedidos en tiempo real: estados, asignación de repartidor, historial y notificaciones.
+- Logística basada en zonas dibujadas sobre **MapLibre GL**, sin depender de tokens comerciales.
+- Panel administrativo con reportes exportables, auditoría de acciones y herramientas de seguridad (cambio de contraseña, bloqueo de auto-eliminación).
+- API documentada y versionada (`/api/v1`), basada en casos de uso y repositorios de dominio.
+- Pruebas automáticas (Jest en backend, Vitest/MSW en frontend) y pipelines CI en GitHub Actions.
+
+## Arquitectura
+- **Monorepo**: backend (`/backend`) y frontend (`/frontend`) conviven con infraestructura común (`/docker-compose`, `/nginx`, scripts).
+- **Backend (Hexagonal/Limpia)**: separé `domain`, `application` (casos de uso y puertos) y `infraestructure` (HTTP, seguridad y persistencia Prisma). Los controladores NestJS sólo orquestan.
+- **Frontend (SPA React)**: uso Vite, React Router y providers (`/lib`) para auth, carrito y favoritos. Los servicios centralizan peticiones HTTP con Axios.
+- **Persistencia**: PostgreSQL gestionado con Prisma y migraciones versionadas. Semillas preparadas para ambientes nuevos.
+- **Infraestructura**: Docker multi-stage para backend y frontend, Nginx como reverse proxy opcional, despliegue automatizado en Railway (API) y Vercel (SPA).
 
 ```
-.
-├─ backend/                  # API NestJS + Prisma
-│  ├─ src/                  # Código fuente (application/domain/infrastructure)
-│  ├─ prisma/               # schema.prisma, migraciones y seed
-│  ├─ Dockerfile            # Build multi-stage
-│  ├─ .env.example          # Variables requeridas y opcionales
-│  └─ README.md             # Guía específica del backend
-├─ frontend/                 # App React + Vite + Tailwind
-│  ├─ src/                  # Páginas, componentes, servicios, hooks
-│  ├─ public/               # Estáticos
-│  ├─ Dockerfile            # Build multi-stage servido por Nginx
-│  ├─ .env.example          # Variables VITE_ de referencia
-│  └─ README.md             # Guía específica del frontend
-├─ nginx/                    # Configuración Nginx (producción opcional)
-├─ uploads/                  # Contenido subido (ignorado en git)
-├─ docker-compose.yml        # Orquestación principal (parametrizada por env)
-├─ docker-compose.dev.yml    # Orquestación de desarrollo
-├─ start-dev.sh              # Script helper para levantar entorno dev
-├─ build-local.sh            # Compilar backend localmente
-├─ .github/                  # Workflows (CI, dependency review, CodeQL) y dependabot
-├─ CONTRIBUTING.md           # Guía de contribuciones
-├─ SECURITY.md               # Política de seguridad y reporte
-└─ LICENSE                   # Licencia del proyecto
+┌───────────────┐      ┌──────────────────┐      ┌──────────────┐
+│  Frontend SPA │ <--> │   API NestJS     │ <--> │ PostgreSQL   │
+│  (React/Vite) │      │ (Clean / Prisma) │      │   + Prisma   │
+└───────────────┘      └──────────────────┘      └──────────────┘
+	  ▲                         │
+	  │   CI/CD GitHub Actions  │
+	  └─────────────┬───────────┘
+			  ▼
+		  Observabilidad (logs Railway, Vercel analytics)
 ```
 
-## Requisitos
+## Tecnologías y herramientas
+- **Backend**: NestJS, TypeScript, Prisma ORM, PostgreSQL, Passport/JWT, Nodemailer, class-validator, Docker.
+- **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Radix UI/shadcn, React Router 7, Axios, MapLibre GL + Draw, Recharts, html2canvas + jsPDF.
+- **Testing**: Jest + Supertest (backend), Vitest + Testing Library + MSW (frontend).
+- **DevOps**: GitHub Actions (CI, CodeQL, Dependency Review), Dependabot, Railway, Vercel, Docker Compose.
 
+## Requisitos previos
 - Node.js 20.x y npm 10+
-- Docker y Docker Compose (opcional pero recomendado)
-- PostgreSQL (si corres backend sin Docker)
+- Docker y Docker Compose (recomendados para orquestación)
+- PostgreSQL 14+ (si prefieres ejecutarlo fuera de Docker)
 
-## Variables de entorno
-
-Los ejemplos están en `backend/.env.example` y `frontend/.env.example`.
-
-- Backend (archivo `.env`):
-	- `DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DB?schema=public`
-	- `JWT_SECRET`, `JWT_EXPIRES_IN` (por defecto usamos `15m`)
-	- `REFRESH_TOKEN_SECRET`, `REFRESH_TOKEN_EXPIRES_IN`
-	- Opcionales: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SHIPPING_ORIGIN_LAT`, `SHIPPING_ORIGIN_LNG`
-
-- Frontend (archivo `.env`):
-	- `VITE_API_URL` (ej: `http://localhost:3000/api/v1`)
-	- `VITE_PAYPAL_CLIENT_ID` (si habilitas PayPal en frontend)
-
-Nota: En frontend, sólo variables prefijadas con `VITE_` quedan disponibles en el build. Nunca expongas secretos de backend.
-
-## Desarrollo local 
-
-Backend:
+## Instalación
 ```bash
+# Clonar el monorepo
+git clone https://github.com/luismanuelcldev/miordenrd.git
+cd miordenrd
+
+# Instalar dependencias de backend
 cd backend
-cp .env.example .env
 npm ci
-npx prisma generate
-npx prisma migrate dev
-npm run start:dev
+
+# Instalar dependencias de frontend
+cd ../frontend
+npm ci
 ```
 
-Frontend:
-```bash
-cd frontend
-cp .env.example .env
-npm ci
-npm run dev
+## Configuración del entorno
+### Backend (`backend/.env`)
+```
+DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DB?schema=public
+JWT_SECRET=changeme
+JWT_EXPIRES_IN=15m
+REFRESH_TOKEN_SECRET=changeme-too
+REFRESH_TOKEN_EXPIRES_IN=30d
+SMTP_HOST=...
+SMTP_PORT=...
+SMTP_USER=...
+SMTP_PASS=...
+SMTP_FROM=Mi Orden RD <notificaciones@miordenrd.com>
+PAYPAL_CLIENT_ID=...
+PAYPAL_CLIENT_SECRET=...
+SHIPPING_ORIGIN_LAT=18.4861
+SHIPPING_ORIGIN_LNG=-69.9312
 ```
 
-## Desarrollo con Docker Compose
+### Frontend (`frontend/.env`)
+```
+VITE_API_URL=http://localhost:3000/api/v1
+VITE_PAYPAL_CLIENT_ID=PAYPAL_TEST_ID
+```
+Las variables del frontend deben comenzar con `VITE_` para exponerse en el build. Nunca expongo secretos de backend en esta capa.
 
-Desde la raíz del proyecto:
+### Credenciales de demostración
+- Administrador: `admin@sistemapedidos.com`
+- Contraseña: `@dmin000L0000@`
+
+## Ejecución
+Cuando trabajo en local suelo elegir entre dos rutas:
+
+### Desarrollo asistido por Docker
 ```bash
-# Levantar DB, Redis y Backend para desarrollo
+# Levanto PostgreSQL, Redis y el backend
 ./start-dev.sh
 
-# (o) usando directamente el compose de dev
-docker-compose -f docker-compose.dev.yml up -d
-```
-
-Frontend en desarrollo (fuera de contenedor, recomendado por DX):
-```bash
+# En otra terminal arranco el frontend
 cd frontend
 npm run dev
 ```
+Este enfoque crea toda la base necesaria en contenedores y deja el backend en `http://localhost:3000` y el frontend en `http://localhost:5173`.
 
-## Despliegues administrados
-
-- **Backend**: alojado en Railway con pipelines automáticos (`npm run build` + migraciones Prisma) y variables seguras (`DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN=15m`, `REFRESH_TOKEN_SECRET`).
-- **Frontend**: publicado en Vercel, build `npm run build` y `outputDirectory=dist`, rutas SPA con `[[path]]` y variables `VITE_*` para consumir la API pública.
-- **CI/CD**: GitHub Actions ejecuta pruebas y análisis antes de cada deploy; CodeQL y Dependency Review refuerzan la seguridad.
-
-## Despliegue con Docker Compose
-
-Variables sensibles se inyectan por entorno; `docker-compose.yml` está parametrizado y no contiene secretos.
-
+### Desarrollo sin contenedores
 ```bash
-# Producción (con perfil nginx opcional)
-docker-compose --profile production up -d
+# PostgreSQL debe estar ejecutándose (local o remoto)
 
-# Ver logs
-docker-compose logs -f backend
-
-# Reiniciar servicios
-docker-compose restart backend
-
-# Detener y limpiar
-docker-compose down -v
-```
-
-## Base de datos y Prisma
-
-- Esquema en `backend/prisma/schema.prisma` y migraciones en `backend/prisma/migrations/`.
-- `docker-compose.yml` ejecuta `prisma migrate deploy` y `prisma db seed` en el arranque del backend.
-- Comandos útiles:
-
-```bash
-# Estado de migraciones
 cd backend
-npx prisma migrate status
-
-# Crear migración de desarrollo
 npx prisma migrate dev
-
-# Seed de datos
 npm run db:seed
+npm run start:dev
+
+cd ../frontend
+npm run dev
 ```
+Uso `npm run start:dev` para recarga en caliente del backend y Vite para el frontend. Redis es opcional en local; si lo necesito, lo lanzo con `docker run redis:7-alpine` o usando el compose.
+
+### Producción local
+```bash
+# Construyo e inicio los servicios con perfiles de producción
+docker-compose --profile production up -d --build
+
+# O enfoco cada paquete
+cd backend && npm run build && npm run start:prod
+cd ../frontend && npm run build && npm run preview
+```
+El compose ejecuta migraciones, genera Prisma Client y sirve la SPA detrás de Nginx. Para entornos reales sólo sustituyo las variables de entorno por valores seguros.
+
+## Estructura del código
+Mantengo el monorepo organizado por capas para localizar rápidamente cada responsabilidad.
+
+```text
+backend/
+	src/
+		main.ts                # Bootstrap NestJS, CORS, Swagger y seguridad
+		app.module.ts          # Inyección de dependencias y módulos globales
+		domain/                # Entidades y modelos ricos del dominio
+		application/
+			useCases/            # Casos de uso (comandos y consultas)
+			ports/               # Interfaces que abstraen infraestructura
+		infraestructure/
+			http/                # Controladores, DTOs, guards y validaciones
+			persistence/         # Adaptadores Prisma + repositorios
+			security/            # Servicios de autenticación y estrategias JWT
+		common/                # Filtros, interceptores y utilidades compartidas
+
+frontend/
+	src/
+		main.tsx               # Bootstrap React y providers globales
+		router.tsx             # Rutas públicas y protegidas
+		layouts/               # Layouts específicos (público, dashboard)
+		components/
+			ui/                  # Componentes reutilizables con Tailwind/Radix
+			layout/              # Shells, barras laterales, headers
+		lib/                   # Providers de auth, carrito, favoritos
+		services/              # Clientes HTTP centralizados (Axios)
+		hooks/                 # Hooks personalizados (analytics, auth)
+		pages/                 # Vistas por dominio (productos, checkout, admin)
+```
+El resto del repositorio agrupa infraestructura (`docker-compose*`, `nginx/`), migraciones Prisma (`backend/prisma/`) y scripts de automatización.
+
+## API principal
+📌 Documenté la API con Swagger en `http://localhost:3000/api/docs` y versioné todo bajo `api/v1`. Estos son los endpoints que más utilizo:
+
+| Método | Endpoint | Descripción | Autenticación |
+| --- | --- | --- | --- |
+| GET | `/api/v1/health` | Salud de la API para Docker/monitorización | No |
+| POST | `/api/v1/auth/login` | Iniciar sesión y obtener tokens | No |
+| POST | `/api/v1/auth/register` | Registrar cliente con validaciones | No |
+| GET | `/api/v1/auth/me` | Perfil del usuario autenticado | Bearer JWT |
+| GET | `/api/v1/productos` | Catálogo con filtros avanzados | No |
+| POST | `/api/v1/productos` | Crear producto (admin/empleado) | Bearer + rol |
+| POST | `/api/v1/checkout` | Orquestar compra del carrito actual | Bearer JWT |
+| GET | `/api/v1/pedidos` | Pedidos filtrados por estado/fecha | Bearer + rol |
+| PATCH | `/api/v1/pedidos/:id/estado` | Actualizar estado de pedido | Bearer + rol |
+| GET | `/api/v1/reportes/dashboard` | Analítica para dashboard admin | Bearer + rol |
+
+Los controladores siguen un patrón claro: DTOs con `class-validator`, guards para JWT + roles y casos de uso en la capa `application`. Para más detalle siempre puedo entrar al Swagger o leer `backend/src/infraestructure/http/controllers`.
 
 ## Pruebas
+🧪 Separé las suites por tipo de capa:
 
-Backend:
-```bash
-cd backend
-npm test
-npm run test:cov
-npm run test:e2e
-```
+- **Backend**
+	- Unitarias: `cd backend && npm test`
+	- Cobertura: `cd backend && npm run test:cov`
+	- End-to-end (HTTP sobre servidor Nest real): `cd backend && npm run test:e2e`
+	- Semillas antes de e2e: `npm run db:seed`
+- **Frontend**
+	- Unitarias/componentes: `cd frontend && npm test`
+	- Watch mode: `npm run test:watch`
+	- Cobertura y reporting: `npm run test:coverage`
 
-Frontend:
-```bash
-cd frontend
-npm test
-npm run test:watch
-npm run test:coverage
-```
+La CI en GitHub Actions ejecuta lint y pruebas críticas en cada push a `master`, lo que me ayuda a mantener la base estable.
 
-## CI/CD y seguridad
+## Despliegue
+Automatizo los despliegues con pipelines simples:
 
-- CI: `.github/workflows/ci.yml` compila y prueba backend y frontend.
-- Dependency Review: escaneo de dependencias en PRs (falla en severidad moderada+).
-- CodeQL: análisis de seguridad semanal y en PRs.
-- Dependabot: actualiza npm (backend/frontend) y GitHub Actions semanalmente.
-- Política de seguridad: ver `SECURITY.md`.
-- Guía de contribución: ver `CONTRIBUTING.md`.
+- **Backend (Railway)**: cada merge a `master` dispara un deploy que construye el Dockerfile del backend, aplica `prisma migrate deploy` y arranca la app. Sólo necesito configurar variables (`DATABASE_URL`, `JWT_SECRET`, `SMTP_*`, `PAYPAL_*`, `FRONTEND_URL`).
+- **Frontend (Vercel)**: Vercel detecta el paquete `frontend`, ejecuta `npm install` + `npm run build` y publica la SPA. Las variables `VITE_API_URL` y `VITE_PAYPAL_CLIENT_ID` se definen en el dashboard de Vercel.
+- **Infraestructura opcional**: cuando quiero auto-hospedar uso `docker-compose.yml` con Nginx como reverse proxy. El tráfico público entra por Nginx, que enruta a la SPA y la API (`/api`).
 
-## Buenas prácticas de secretos
+Antes de desplegar reviso migraciones (`prisma migrate status`) y ejecuto `npm run build` en ambos paquetes para asegurarme de que no existen errores de compilación.
 
-- No commitear `.env` ni certificados; ya están ignorados en `.gitignore`.
-- `docker-compose.yml` y `docker-compose.dev.yml` leen secretos desde el entorno.
-- En GitHub Actions usar “Repository Secrets”.
-- Certificados/llaves locales (nginx/ssl, `*.key`, `*.crt`, `*.pem`, `*.pfx`) no deben subirse.
+## Contribuciones
+Estoy abierto a contribuciones. El flujo propuesto está documentado en `CONTRIBUTING.md`, pero en resumen:
 
-## Credenciales de demostración (Prueba) para la parte Administrativa:
+1. Crea una rama desde `master` siguiendo Conventional Commits (`feat/`, `fix/`, etc.).
+2. Alinea tu entorno (`cp backend/.env.example backend/.env` y `cp frontend/.env.example frontend/.env`).
+3. Ejecuta lint y pruebas antes de abrir el PR (`npm run lint`, `npm test`).
+4. Describe claramente el cambio, adjunta evidencia visual si afecta a la UI y verifica que no incluyes secretos.
 
-- Correo electrónico: `admin@sistemapedidos.com`
-- Contraseña: `@dmin000L0000@` 
-
-## Enlaces útiles
-
-- Backend: `backend/README.md`
-- Frontend: `frontend/README.md`
+Si detectas vulnerabilidades, utiliza el flujo privado descrito en `SECURITY.md`.
 
 ## Licencia
+El proyecto está licenciado bajo **Apache License 2.0**. Puedes revisar los términos completos en `LICENSE`.
 
-Consulta el archivo `LICENSE` en la raíz del repositorio.
+## Autor y contacto
+👤 Soy **Luis Manuel De La Cruz Ledesma** (`@luismanuelcldev`). Si quieres ponerte en contacto conmigo:
+- Abre un issue en GitHub para bugs, preguntas o nuevas ideas.
+- Para conversaciones directas, envía un mensaje privado desde mi perfil de GitHub.
 
-## Autor
-
-- Luis Manuel De La Cruz Ledesma — Sistema de Pedidos Online (MiOrdenRD) 
+Estoy activo en el repositorio y doy seguimiento continuo a feedback y mejoras.
 
