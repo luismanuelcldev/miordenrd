@@ -19,7 +19,7 @@ jobs:
       REFRESH_TOKEN_SECRET: test-refresh-secret
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -44,7 +44,7 @@ jobs:
       VITE_API_URL: http://localhost:3000/api/v1
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
