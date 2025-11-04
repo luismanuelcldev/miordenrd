@@ -72,6 +72,7 @@ Relación general: Pages ⇄ Providers ⇄ Services ⇄ Backend.
 - Checkout: direcciones, cálculo de envío por zonas, métodos de pago (PayPal).
 - Cuenta: pedidos, direcciones, favoritos, perfil.
 - Panel Admin: productos, inventario, categorías, pedidos, usuarios, reportes, configuración.
+- Configuración admin: actualización de tienda y cambio de contraseña con validaciones UI.
 - Logística/Zonas: edición de polígonos y tarifas con MapLibre + Draw.
 - Reportes: KPIs, gráficos y exporte a PDF.
 
@@ -80,6 +81,7 @@ Archivo de referencia: `.env.example`.
 
 - `VITE_API_URL`: URL base del backend (por ejemplo `http://localhost:3000/api/v1`).
 - `VITE_PAYPAL_CLIENT_ID`: ID de cliente PayPal (si usas pagos PayPal en el frontend).
+- Variables adicionales gestionadas en producción (`Vercel Environment Variables`) deben mantener el prefijo `VITE_` para exponerse en el build.
 
 Nota: las variables deben comenzar con `VITE_` para quedar disponibles en tiempo de build. Nunca expongas secretos de backend aquí.
 
@@ -111,6 +113,13 @@ Con Docker Compose (recomendado desde la raíz):
 cd ..
 docker-compose up -d
 ```
+
+## Despliegue en Vercel
+- Build command: `npm run build`
+- Install command: `npm install`
+- Output directory: `dist`
+- Rutas SPA: archivo `vercel.json` define `routes` con fallback a `public` y `dist` (`[[path]]`).
+- Variables en Vercel: `VITE_API_URL` (apunta al backend en Railway) y `VITE_PAYPAL_CLIENT_ID`.
 
 ## Scripts
 ```bash

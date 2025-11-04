@@ -11,6 +11,7 @@ Repositorio que contiene el backend (NestJS + Prisma + PostgreSQL) y el frontend
 - Gestión de pedidos, estados y asignación de repartidor
 - Logística por zonas con MapLibre + Draw (sin necesidad de token propietario)
 - Panel de administración (productos, usuarios, reportes, configuración)
+- Herramientas administrativas: cambio de contraseña, bloqueo de auto-eliminación y auditoría
 - Reportes con gráficos y exporte a PDF
 - Docker Compose con healthchecks y Nginx opcional
 - Pruebas unitarias (backend: Jest, frontend: Vitest/MSW)
@@ -55,7 +56,7 @@ Los ejemplos están en `backend/.env.example` y `frontend/.env.example`.
 
 - Backend (archivo `.env`):
 	- `DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DB?schema=public`
-	- `JWT_SECRET`, `JWT_EXPIRES_IN`
+	- `JWT_SECRET`, `JWT_EXPIRES_IN` (por defecto usamos `15m`)
 	- `REFRESH_TOKEN_SECRET`, `REFRESH_TOKEN_EXPIRES_IN`
 	- Opcionales: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `SHIPPING_ORIGIN_LAT`, `SHIPPING_ORIGIN_LNG`
 
@@ -101,6 +102,12 @@ Frontend en desarrollo (fuera de contenedor, recomendado por DX):
 cd frontend
 npm run dev
 ```
+
+## Despliegues administrados
+
+- **Backend**: alojado en Railway con pipelines automáticos (`npm run build` + migraciones Prisma) y variables seguras (`DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN=15m`, `REFRESH_TOKEN_SECRET`).
+- **Frontend**: publicado en Vercel, build `npm run build` y `outputDirectory=dist`, rutas SPA con `[[path]]` y variables `VITE_*` para consumir la API pública.
+- **CI/CD**: GitHub Actions ejecuta pruebas y análisis antes de cada deploy; CodeQL y Dependency Review refuerzan la seguridad.
 
 ## Despliegue con Docker Compose
 
@@ -171,6 +178,11 @@ npm run test:coverage
 - `docker-compose.yml` y `docker-compose.dev.yml` leen secretos desde el entorno.
 - En GitHub Actions usar “Repository Secrets”.
 - Certificados/llaves locales (nginx/ssl, `*.key`, `*.crt`, `*.pem`, `*.pfx`) no deben subirse.
+
+## Credenciales de demostración (Prueba) para la parte Administrativa:
+
+- Correo electrónico: `admin@sistemapedidos.com`
+- Contraseña: `@dmin000L0000@` 
 
 ## Enlaces útiles
 

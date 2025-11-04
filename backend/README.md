@@ -64,6 +64,7 @@ Diagrama general (conceptual): Domain ⇄ Application ⇄ Ports ⇄ Infrastructu
 
 ## Componentes y responsabilidades
 - Autenticación (JWT): registro (`POST /auth/register`), login (`POST /auth/login`), perfil (`GET /auth/me`).
+- Gestión de credenciales: cambio de contraseña segura (`POST /auth/change-password`) y bloqueo de auto-eliminación para administradores.
 - Productos: CRUD protegido por rol administrador; listado y detalle públicos.
 - Pedidos: checkout desde carrito, cambio de estado y asignación de repartidor con notificaciones.
 - Usuarios: gestión administrativa de cuentas (alta, actualización selectiva).
@@ -77,7 +78,7 @@ Guards/decorators destacados:
 ## Variables de entorno
 Archivo de referencia: `.env.example`.
 - `DATABASE_URL`: cadena de conexión a PostgreSQL.
-- `JWT_SECRET` y `JWT_EXPIRES_IN`: secreto y TTL del access token.
+- `JWT_SECRET` y `JWT_EXPIRES_IN`: secreto y TTL del access token (en producción usamos `15m`).
 - `REFRESH_TOKEN_SECRET` y `REFRESH_TOKEN_EXPIRES_IN`: secreto y TTL del refresh token (si aplica).
 - Opcionales: `UPLOADS_DIR`, `SHIPPING_ORIGIN_LAT`, `SHIPPING_ORIGIN_LNG`.
 
@@ -145,6 +146,7 @@ Las pruebas e2e inician una app Nest real y usan Supertest contra rutas HTTP. An
 
 ## API rápida (endpoints clave)
 - Autenticación: `POST /auth/register`, `POST /auth/login`, `GET /auth/me`.
+- Seguridad de cuenta: `POST /auth/change-password` (requiere contraseña actual y valida políticas de complejidad).
 - Productos: `GET /productos`, `GET /productos/:id`, `POST /productos` (ADMIN), `PATCH /productos/:id` (ADMIN), `DELETE /productos/:id` (ADMIN).
 - Usuarios: `POST /usuarios` (ADMIN), `PATCH /usuarios/:id` (ADMIN).
 Nota: algunos endpoints requieren header `Authorization: Bearer <token>` y rol específico.
@@ -174,6 +176,7 @@ Nota: algunos endpoints requieren header `Authorization: Bearer <token>` y rol e
 - Para cambios de esquema: actualizar `schema.prisma`, generar cliente y crear migración; no editar migraciones ya aplicadas.
 - Backups de BD recomendados antes de migraciones críticas.
 - Revisar logs y métricas (si se integran) para detectar excepciones o degradaciones.
+- Despliegue recomendado: Railway con build `npm run build`, migraciones automatizadas (`prisma migrate deploy`) y variables de entorno (`JWT_EXPIRES_IN=15m`).
 
 ## Notas finales
 - El directorio `uploads/products/` puede montarse en volumen persistente en producción.
