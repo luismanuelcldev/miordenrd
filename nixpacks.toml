@@ -19,4 +19,5 @@ cmds = [
 ]
 
 [start]
+runImage = "ghcr.io/railwayapp/nixpacks:node-20"
 cmd = "cd backend && npm run start:prod"
