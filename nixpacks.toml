@@ -1,0 +1,22 @@
+providers = ["node"]
+
+[variables]
+NODE_ENV = "production"
+
+[phases.setup]
+nixPkgs = ["nodejs_20", "openssl"]
+
+[phases.install]
+cmds = [
+  "cd backend && npm ci"
+]
+
+[phases.build]
+cmds = [
+  "cd backend && npx prisma generate",
+  "cd backend && npm run build",
+  "cd backend && npm prune --omit=dev"
+]
+
+[start]
+cmd = "cd backend && npm run start:prod"

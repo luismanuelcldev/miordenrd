@@ -104,10 +104,6 @@ VITE_PAYPAL_CLIENT_ID=PAYPAL_TEST_ID
 ```
 Las variables del frontend deben comenzar con `VITE_` para exponerse en el build. Nunca expongo secretos de backend en esta capa.
 
-### Credenciales de demostración
-- Administrador: `admin@sistemapedidos.com`
-- Contraseña: `@dmin000L0000@`
-
 ## Ejecución
 Cuando trabajo en local suelo elegir entre dos rutas:
 
