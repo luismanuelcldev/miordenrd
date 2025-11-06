@@ -54,37 +54,39 @@ export default function HomePage() {
 
   return (
     <main>
-      <section className="relative bg-gradient-to-br from-blue-50 via-white to-blue-100 py-20 lg:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-100 py-16 sm:py-20 lg:py-28">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+            <div className="space-y-8 text-center lg:text-left">
               <div className="space-y-4">
-                <Badge className="w-fit bg-blue-500 hover:bg-blue-600 text-white">Compra local, compra seguro</Badge>
-                <h1 className="font-display text-4xl lg:text-6xl font-bold text-balance bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                  Encuentra los mejores productos para tu hogar y mucho mas
+                <Badge className="mx-auto w-fit bg-blue-500/90 hover:bg-blue-600 text-white lg:mx-0">Compra local, compra seguro</Badge>
+                <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-balance bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+                  Encuentra los mejores productos para tu hogar y mucho más
                 </h1>
-                <p className="text-lg text-slate-600 leading-relaxed">
-                  Descubre nuestro catálogo de productos.
+                <p className="mx-auto max-w-xl text-base sm:text-lg text-slate-600 leading-relaxed lg:mx-0">
+                  Navega un catálogo curado por expertos, con entregas rápidas y soporte cercano para tu hogar y tu negocio.
                 </p>
               </div>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/productos">
-                  <Button size="lg" className="group bg-blue-500 hover:bg-blue-600 text-white shadow-lg shadow-blue-500/50">
+              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
+                <Link to="/productos" className="w-full sm:w-auto">
+                  <Button size="lg" className="group w-full sm:w-auto bg-blue-500 text-white shadow-lg shadow-blue-500/40 hover:bg-blue-600">
                     Explorar productos
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
-                <Link to="/ofertas">
-                  <Button variant="outline" size="lg" className="border-blue-500 text-blue-600 hover:bg-blue-50">
+                <Link to="/ofertas" className="w-full sm:w-auto">
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto border-blue-500 text-blue-600 hover:bg-blue-50">
                     Ver ofertas
                   </Button>
                 </Link>
               </div>
             </div>
-            <div className="relative">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center">
-                <img src="/images/Articulos-destacados.PNG" alt="Productos destacados" className="w-3/4 h-3/4 object-contain" />
+            <div className="relative mx-auto w-full max-w-md sm:max-w-lg lg:max-w-xl">
+              <div className="aspect-square flex items-center justify-center rounded-3xl bg-white/70 backdrop-blur-sm shadow-xl shadow-blue-200/40">
+                <img src="/images/Articulos-destacados.PNG" alt="Productos destacados" className="h-[85%] w-[85%] object-contain drop-shadow-lg" />
               </div>
+              <div className="pointer-events-none absolute -bottom-12 -left-10 hidden h-40 w-40 rounded-full bg-blue-200/30 blur-3xl md:block" aria-hidden="true" />
+              <div className="pointer-events-none absolute -top-12 -right-12 hidden h-40 w-40 rounded-full bg-blue-400/20 blur-3xl md:block" aria-hidden="true" />
             </div>
           </div>
         </div>
@@ -92,7 +94,7 @@ export default function HomePage() {
 
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
             <Caracteristica icono={<Truck className="h-8 w-8 text-white" />} titulo="Envío rápido" descripcion="Recibe tus pedidos entre 2 y 4 días" />
             <Caracteristica icono={<Shield className="h-8 w-8 text-white" />} titulo="Compra segura" descripcion="Protección total en tus pagos" />
             <Caracteristica icono={<CreditCard className="h-8 w-8 text-white" />} titulo="Pagos flexibles" descripcion="Tarjeta, transferencia o contra entrega" />
@@ -191,8 +193,8 @@ export default function HomePage() {
 // Renderizo una tarjeta de característica reutilizable para la sección informativa
 function Caracteristica({ icono, titulo, descripcion }: { icono: React.ReactNode; titulo: string; descripcion: string }) {
   return (
-    <div className="text-center space-y-4 p-6 rounded-xl hover:bg-blue-50 transition-colors">
-      <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-blue-500/30">
+    <div className="text-center space-y-4 rounded-2xl bg-slate-50/90 p-6 shadow-sm shadow-blue-100 transition-all hover:-translate-y-1 hover:shadow-lg">
+      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg shadow-blue-500/30">
         {icono}
       </div>
       <h3 className="font-bold text-slate-800">{titulo}</h3>

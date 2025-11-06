@@ -10,12 +10,12 @@ export function Footer() {
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8 py-12 space-y-10">
         <div className="flex flex-col items-center text-center lg:flex-row lg:items-center lg:justify-between lg:text-left gap-6">
           {/* Información de la empresa */}
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#2b62e1]/10">
-              <img src="/images/shopping.png" alt="MiOrdenRD" className="h-8 w-8" />
+          <div className="flex flex-col items-center gap-4 text-center lg:flex-row lg:items-center lg:text-left">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-50 via-white to-blue-100 shadow-inner">
+              <img src="/images/Logo.PNG" alt="MiOrdenRD" className="h-12 w-12 object-contain" />
             </div>
-            <div>
-              <p className="font-display text-xl font-semibold text-slate-800 tracking-tight">MiOrdenRD</p>
+            <div className="max-w-xs lg:max-w-sm">
+              <p className="text-base font-semibold text-blue-700 leading-tight">MiOrdenRD</p>
               <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
                 Entregamos productos confiables en todo el país con un servicio al cliente cercano y oportuno.
               </p>

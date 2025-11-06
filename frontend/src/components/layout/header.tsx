@@ -76,20 +76,23 @@ export function Header() {
     <>
       <header className="sticky top-0 z-50 w-full border-b border-blue-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80 shadow-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
+        <div className="flex h-20 items-center justify-between">
+          {/* Marca */}
           <Link
             to={esPersonalAdministrativo ? "/admin" : esRepartidor ? "/repartidor" : "/"}
-            className="flex items-center gap-2 group"
+            className="flex items-center gap-3 group"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-100 bg-[#2b62e1]/5 shadow-sm transition group-hover:border-[#2b62e1]/40">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-blue-100 bg-gradient-to-br from-blue-50 via-white to-blue-100 shadow-md transition duration-200 group-hover:border-[#2b62e1]/60">
               <img
                 src="/images/Logo.PNG"
                 alt="MiOrdenRD"
-                className="h-6 w-6"
+                className="h-10 w-10 object-contain drop-shadow-sm"
               />
             </div>
-
+            <div className="flex flex-col leading-tight">
+              <span className="text-lg font-semibold text-blue-700">MiOrdenRD</span>
+              <span className="text-xs text-slate-500 hidden sm:block">Pedidos inteligentes para todo el país</span>
+            </div>
           </Link>
 
           {/* Navegación Desktop */}
