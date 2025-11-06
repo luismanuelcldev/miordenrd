@@ -32,7 +32,14 @@ download_node_if_missing() {
 
 	if [ ! -d "$TARGET_DIR" ]; then
 		echo "Descargando Node.js $NODE_VERSION para $NODE_DIST..."
-		curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/${ARCHIVE}" -o "$TMP_DIR/${ARCHIVE}"
+		if command -v curl >/dev/null 2>&1; then
+			curl -fsSL "https://nodejs.org/dist/v${NODE_VERSION}/${ARCHIVE}" -o "$TMP_DIR/${ARCHIVE}"
+		elif command -v wget >/dev/null 2>&1; then
+			wget -qO "$TMP_DIR/${ARCHIVE}" "https://nodejs.org/dist/v${NODE_VERSION}/${ARCHIVE}"
+		else
+			echo "No se pudo descargar Node.js: curl y wget no están disponibles." >&2
+			return 1
+		fi
 		tar -xf "$TMP_DIR/${ARCHIVE}" -C "$TMP_DIR"
 	fi
 
@@ -53,7 +60,10 @@ for candidate in \
 	"/usr/bin/node" \
 	"/nix/var/nix/profiles/default/bin/node" \
 	"/nix/profile/bin/node" \
-	"/tmp/node-runtime"/node-v*/bin/node; do
+	"/tmp/node-runtime"/node-v*/bin/node \
+	/nix/store/*node*/bin/node; do
+	# Glob sin coincidencias regresa el patrón literal; lo saltamos.
+	[ -e "$candidate" ] || continue
 	if [ -x "$candidate" ]; then
 		exec "$candidate" "build/main.js"
 	fi
