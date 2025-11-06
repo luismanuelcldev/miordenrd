@@ -84,15 +84,12 @@ export function Header() {
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-full border border-blue-100 bg-[#2b62e1]/5 shadow-sm transition group-hover:border-[#2b62e1]/40">
               <img
-                src="/images/shopping.png"
+                src="/images/Logo.PNG"
                 alt="MiOrdenRD"
                 className="h-6 w-6"
               />
             </div>
-            <span className="font-display text-xl font-bold bg-gradient-to-r from-blue-500 to-blue-700 bg-clip-text text-transparent tracking-tight">
-              MiOrdenRD
-            </span>
-            
+
           </Link>
 
           {/* Navegación Desktop */}
