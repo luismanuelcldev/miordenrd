@@ -7,3 +7,5 @@ npm ci
 npx prisma generate
 npm run build
 npm prune --omit=dev
+
+./scripts/prepare-node-runtime.sh

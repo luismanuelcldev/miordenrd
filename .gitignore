@@ -10,6 +10,7 @@ coverage/
 backend/dist/
 backend/build/
 backend/coverage/
+backend/node-runtime/
 frontend/dist/
 
 # Environment files
