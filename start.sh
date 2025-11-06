@@ -27,9 +27,14 @@ detect_node_dist() {
 
 NODE_DIST=$(detect_node_dist)
 NODE_RUNTIME_DIR="$BACKEND_DIR/node-runtime/node-v${NODE_VERSION}-${NODE_DIST}"
+NODE_MODULE_NODE="$BACKEND_DIR/node_modules/node/bin/node"
 
 if [ -d "$NODE_RUNTIME_DIR/bin" ]; then
 	export PATH="$NODE_RUNTIME_DIR/bin:$PATH"
+fi
+
+if [ -x "$NODE_MODULE_NODE" ]; then
+	export PATH="$(dirname "$NODE_MODULE_NODE"):$PATH"
 fi
 
 download_node_if_missing() {
@@ -71,6 +76,7 @@ fi
 
 for candidate in \
 	"$NODE_RUNTIME_DIR"/bin/node \
+	"$NODE_MODULE_NODE" \
 	/usr/local/bin/node \
 	/usr/bin/node \
 	/nix/var/nix/profiles/default/bin/node \

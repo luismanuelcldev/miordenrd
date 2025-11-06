@@ -16,6 +16,11 @@ case "$ARCH" in
 		;;
  esac
 
+if [ -x "node_modules/node/bin/node" ]; then
+	echo "Node runtime disponible vía dependencia npm; omito descarga manual."
+	exit 0
+fi
+
 RUNTIME_DIR="node-runtime/node-v${NODE_VERSION}-${NODE_DIST}"
 if [ -d "$RUNTIME_DIR/bin" ]; then
 	echo "Node runtime ya existe en $RUNTIME_DIR"
