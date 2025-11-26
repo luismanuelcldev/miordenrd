@@ -14,8 +14,8 @@ COPY package*.json ./
 COPY prisma ./prisma/
 
 # Instalo todas las dependencias (incluyendo dev) para poder compilar en esta etapa.
-# Si falla por red, intento nuevamente para evitar builds frágiles.
-RUN npm ci || npm ci || npm install
+# Elimino package-lock.json para forzar una instalación limpia y evitar dependencias fantasmas como 'node'.
+RUN rm -f package-lock.json && npm install
 
 # Llevo el código fuente al contexto de construcción.
 COPY . .
@@ -39,7 +39,7 @@ RUN npm config set fetch-retry-maxtimeout 120000 && \
 
 # Instalo únicamente las dependencias de producción para reducir el tamaño de la imagen final.
 COPY package*.json ./
-RUN npm ci --only=production || npm ci --only=production || npm install --only=production
+RUN rm -f package-lock.json && npm install --only=production
 
 # Copio artefactos compilados y binarios de Prisma desde la etapa de builder.
 COPY --from=builder /app/build ./build
