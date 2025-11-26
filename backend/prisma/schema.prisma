@@ -31,7 +31,8 @@ enum EstadoStock {
 
 generator client {
   // Genero el cliente de Prisma para consultas tipadas en Node/Nest.
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
