@@ -40,18 +40,6 @@ Construí **MiOrdenRD** para ofrecer un e-commerce completo y operable en produc
 - **Persistencia**: PostgreSQL gestionado con Prisma y migraciones versionadas. Semillas preparadas para ambientes nuevos.
 - **Infraestructura**: Docker multi-stage para backend y frontend, Nginx como reverse proxy opcional, despliegue automatizado en Railway (API) y Vercel (SPA).
 
-```
-┌───────────────┐      ┌──────────────────┐      ┌──────────────┐
-│  Frontend SPA │ <--> │   API NestJS     │ <--> │ PostgreSQL   │
-│  (React/Vite) │      │ (Clean / Prisma) │      │   + Prisma   │
-└───────────────┘      └──────────────────┘      └──────────────┘
-	  ▲                         │
-	  │   CI/CD GitHub Actions  │
-	  └─────────────┬───────────┘
-			  ▼
-		  Observabilidad (logs Railway, Vercel analytics)
-```
-
 ## Tecnologías y herramientas
 - **Backend**: NestJS, TypeScript, Prisma ORM, PostgreSQL, Passport/JWT, Nodemailer, class-validator, Docker.
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, Radix UI/shadcn, React Router 7, Axios, MapLibre GL + Draw, Recharts, html2canvas + jsPDF.
