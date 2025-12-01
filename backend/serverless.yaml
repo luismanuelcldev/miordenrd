@@ -1,0 +1,43 @@
+service: miordenrd-backend
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  role: arn:aws:iam::881490115556:role/miordenrd-ci-deploy-role
+  region: us-east-1
+  memorySize: 512
+  timeout: 29
+  environment:
+    NODE_ENV: production
+    DATABASE_URL: ${env:DATABASE_URL}
+    JWT_SECRET: ${env:JWT_SECRET}
+    JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET}
+    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN}
+    FRONTEND_URL: ${env:FRONTEND_URL, 'https://miordenrd.vercel.app'}
+    # Agrega aquí otras variables necesarias
+
+functions:
+  api:
+    handler: build/lambda.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: '{proxy+}'
+
+plugins:
+  - serverless-offline
+
+package:
+  exclude:
+    - .git/**
+    - src/**
+    - test/**
+    - e2e/**
+    - nodemon.json
+    - README.md
+    - prisma/seed.js # No necesitamos el seed en lambda
