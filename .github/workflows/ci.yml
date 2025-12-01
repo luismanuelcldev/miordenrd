@@ -14,12 +14,19 @@ jobs:
       run:
         working-directory: backend
     env:
-      DATABASE_URL: postgresql://user:password@localhost:5432/test
-      JWT_SECRET: test-secret
-      REFRESH_TOKEN_SECRET: test-refresh-secret
+      # Use GitHub Secrets for sensitive values instead of inline placeholders
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      # Note: backend uses JWT_REFRESH_SECRET variable name, so ensure your secret is named JWT_REFRESH_SECRET
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Cache backend node modules
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -28,6 +35,8 @@ jobs:
           cache-dependency-path: backend/package-lock.json
       - name: Install dependencies
         run: npm ci
+      - name: Generate Prisma client
+        run: npx prisma generate
       - name: Run tests
         run: npm run test -- --runInBand
       - name: Build
@@ -45,6 +54,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Cache frontend node modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
