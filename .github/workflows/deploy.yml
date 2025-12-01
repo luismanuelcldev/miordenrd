@@ -2,7 +2,7 @@ name: Deploy backend (Serverless - OIDC)
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   workflow_dispatch:
 
 permissions:
@@ -26,6 +26,12 @@ jobs:
       - name: Validate identity
         run: aws sts get-caller-identity
 
+      - name: Cache backend node modules
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -33,8 +39,15 @@ jobs:
 
       - name: Install backend dependencies and build backend
         working-directory: backend
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_EXPIRES_IN: ${{ secrets.JWT_EXPIRES_IN }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
         run: |
           npm ci
+          npx prisma generate || true
           npm run build
 
       - name: Run Serverless Deploy (Backend)
@@ -47,4 +60,4 @@ jobs:
           FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
         run: |
           aws sts get-caller-identity
-          npx serverless deploy --stage prod
+          npx serverless deploy --stage prod --verbose
