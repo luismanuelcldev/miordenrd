@@ -1,0 +1,104 @@
+{
+  "/home/luismanuelcldev/Sistemas con NestJS y ReactJS/sistemapedidos/backend/serverless.yaml": {
+    "versionFramework": "4.25.0",
+    "servicePath": "/home/luismanuelcldev/Sistemas con NestJS y ReactJS/sistemapedidos/backend/serverless.yaml",
+    "serviceConfigFileName": "serverless.yaml",
+    "service": {
+      "service": "miordenrd-backend",
+      "useDotenv": true,
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs20.x",
+        "region": "us-east-1",
+        "memorySize": 512,
+        "timeout": 29,
+        "environment": {
+          "NODE_ENV": "production",
+          "DATABASE_URL": "postgresql://adminsp:adminsp13@sistemapedidos-db.cuvyqke2wjmu.us-east-1.rds.amazonaws.com:5432/sistemapedidos?schema=public",
+          "JWT_SECRET": "<REDACTED>",
+          "JWT_REFRESH_SECRET": "<REDACTED>",
+          "JWT_EXPIRES_IN": "15m",
+          "FRONTEND_URL": "${env:FRONTEND_URL}"
+        }
+      },
+      "functions": {
+        "api": {
+          "handler": "build/lambda.handler",
+          "events": [
+            {
+              "http": {
+                "method": "ANY",
+                "path": "/"
+              }
+            },
+            {
+              "http": {
+                "method": "ANY",
+                "path": "{proxy+}"
+              }
+            }
+          ]
+        }
+      },
+      "plugins": [
+        "serverless-offline"
+      ],
+      "package": {
+        "exclude": [
+          ".git/**",
+          "src/**",
+          "test/**",
+          "e2e/**",
+          "nodemon.json",
+          "README.md",
+          "prisma/seed.js"
+        ]
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs20.x",
+      "region": "us-east-1",
+      "memorySize": 512,
+      "timeout": 29,
+      "environment": {
+        "NODE_ENV": "production",
+        "DATABASE_URL": "postgresql://adminsp:adminsp13@sistemapedidos-db.cuvyqke2wjmu.us-east-1.rds.amazonaws.com:5432/sistemapedidos?schema=public",
+        "JWT_SECRET": "<REDACTED>",
+        "JWT_REFRESH_SECRET": "<REDACTED>",
+        "JWT_EXPIRES_IN": "15m",
+        "FRONTEND_URL": "${env:FRONTEND_URL}"
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": true,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "error": {
+      "message": "Cannot resolve '${env:FRONTEND_URL}' variable at 'provider.environment.FRONTEND_URL'. No value is available for this variable, and no default value was provided. Please check your variable definitions or provide a default value.",
+      "stack": "Error: Cannot resolve '${env:FRONTEND_URL}' variable at 'provider.environment.FRONTEND_URL'. No value is available for this variable, and no default value was provided. Please check your variable definitions or provide a default value.\n    at _ResolverManager.resolve (file:///home/luismanuelcldev/.serverless/releases/4.25.0/package/dist/sf-core.js:726:32288)\n    at async #handlePlaceholderNode (file:///home/luismanuelcldev/.serverless/releases/4.25.0/package/dist/sf-core.js:726:30476)\n    at async file:///home/luismanuelcldev/.serverless/releases/4.25.0/package/dist/sf-core.js:726:28321\n    at async processNodeAndHandleCompletion (file:///home/luismanuelcldev/.serverless/releases/4.25.0/package/dist/sf-core.js:726:16724)",
+      "code": "MISSING_VARIABLE_RESULT"
+    },
+    "serviceRawFile": "service: miordenrd-backend\n\nuseDotenv: true\n\nprovider:\n  name: aws\n  runtime: nodejs20.x\n  region: us-east-1\n  memorySize: 512\n  timeout: 29\n  environment:\n    NODE_ENV: production\n    DATABASE_URL: ${env:DATABASE_URL}\n    JWT_SECRET: ${env:JWT_SECRET}\n    JWT_REFRESH_SECRET: ${env:JWT_REFRESH_SECRET}\n    JWT_EXPIRES_IN: ${env:JWT_EXPIRES_IN}\n    FRONTEND_URL: ${env:FRONTEND_URL}\n    # Agrega aquí otras variables necesarias\n\nfunctions:\n  api:\n    handler: build/lambda.handler\n    events:\n      - http:\n          method: ANY\n          path: /\n      - http:\n          method: ANY\n          path: '{proxy+}'\n\nplugins:\n  - serverless-offline\n\npackage:\n  exclude:\n    - .git/**\n    - src/**\n    - test/**\n    - e2e/**\n    - nodemon.json\n    - README.md\n    - prisma/seed.js # No necesitamos el seed en lambda\n",
+    "command": [
+      "deploy"
+    ],
+    "options": {
+      "verbose": true
+    },
+    "orgId": "20a6cdf8-0bac-4c80-bdd5-15cfa0a8744a",
+    "orgName": "luismanuelcldev",
+    "userId": "yJvd7rcRLrrdzJrQ3g",
+    "userName": "luismanuelcldev",
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}
