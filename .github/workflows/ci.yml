@@ -28,7 +28,7 @@ jobs:
           path: backend/node_modules
           key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'npm'
@@ -60,7 +60,7 @@ jobs:
           path: frontend/node_modules
           key: ${{ runner.os }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: 'npm'
